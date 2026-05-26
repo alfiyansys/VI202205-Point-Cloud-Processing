@@ -60,6 +60,12 @@ Noise σ = 0.03 m (3 cm) dipilih untuk mensimulasikan LiDAR dengan presisi tingg
 
 `np.random.seed(42)` diset di awal eksekusi. Ini memastikan setiap run menghasilkan data identik, bukan sekadar konvensi, tapi kebutuhan untuk eksperimen yang dapat direplikasi dan dibandingkan secara fair.
 
+### 2.4 Visualisasi Ground Truth
+
+![Ground Truth Point Cloud](figures/fig1_ground_truth.png)
+
+*Gambar 1. Point cloud sintetis dengan label ground truth: lantai (biru), Dinding A (oranye), Dinding B (hijau).*
+
 ---
 
 ## 3. Metode 1: RANSAC Iteratif
@@ -107,6 +113,14 @@ label = {0: 1, 1: 2, 2: 0}[dominant]
 Ini bekerja karena ketiga bidang saling tegak lurus, sehingga normalnya masing-masing sejajar dengan salah satu sumbu koordinat.
 
 ### 3.4 Hasil
+
+![Hasil Segmentasi RANSAC](figures/fig2_ransac.png)
+
+*Gambar 2. Hasil segmentasi RANSAC: lantai (biru), Dinding A (oranye), Dinding B (hijau), titik unclassified (abu-abu).*
+
+![Confusion Matrix RANSAC](figures/fig3_cm_ransac.png)
+
+*Gambar 3. Confusion matrix hasil segmentasi RANSAC (dihitung pada titik yang terklasifikasi).*
 
 | Metrik | Nilai |
 |---|---|
@@ -161,6 +175,14 @@ Threshold 15° dipilih: cukup besar untuk mentoleransi noise estimasi normal, cu
 
 ### 4.4 Hasil
 
+![Hasil Segmentasi Region Growing](figures/fig4_region_growing.png)
+
+*Gambar 4. Hasil segmentasi Region Growing: lantai (biru), Dinding A (oranye), Dinding B (hijau), titik unclassified (abu-abu).*
+
+![Confusion Matrix Region Growing](figures/fig5_cm_rg.png)
+
+*Gambar 5. Confusion matrix hasil segmentasi Region Growing.*
+
 | Metrik | Nilai |
 |---|---|
 | Waktu komputasi | 0.505 detik |
@@ -178,7 +200,13 @@ Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak 
 
 ## 5. Perbandingan dan Analisis
 
-### 5.1 Tabel Perbandingan
+### 5.1 Visualisasi Perbandingan
+
+![Perbandingan Metrik dan Waktu](figures/fig6_comparison.png)
+
+*Gambar 6. Perbandingan metrik klasifikasi (kiri) dan waktu komputasi (kanan) antara RANSAC dan Region Growing.*
+
+### 5.2 Tabel Perbandingan
 
 | Dimensi | RANSAC | Region Growing |
 |---|---|---|
@@ -190,7 +218,7 @@ Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak 
 | **Unclassified** | 1.510 titik | **735 titik** |
 | **Coverage** | 90.6% | **95.4%** |
 
-### 5.2 Mengapa Region Growing Unggul di Kasus Ini?
+### 5.3 Mengapa Region Growing Unggul di Kasus Ini?
 
 Perbedaan performa ini bukan kebetulan, melainkan konsekuensi langsung dari karakteristik data.
 
@@ -203,7 +231,7 @@ Dalam kondisi ini, Region Growing memiliki keunggulan struktural: ia **mengekspl
 
 RANSAC, di sisi lain, bergantung pada sampling acak. Ada probabilitas kecil bahwa 3 titik terpilih menghasilkan model suboptimal yang tidak mewakili bidang utama. Dengan 1000 iterasi, probabilitas ini sangat kecil, tapi tidak nol. Itulah sumber dari 1.510 titik unclassified: boundary titik yang tidak masuk ke inlier set manapun.
 
-### 5.3 Keterbatasan Evaluasi
+### 5.4 Keterbatasan Evaluasi
 
 Perlu jujur tentang satu keterbatasan dalam metrik yang dilaporkan: **precision, recall, dan F1 dihitung hanya pada titik yang berhasil diklasifikasikan**, sedangkan titik unclassified tidak dimasukkan ke dalam perhitungan.
 
@@ -213,7 +241,7 @@ $$\text{Recall}_{\text{strict}} = \frac{\text{TP}}{\text{TP} + \text{FN} + \text
 
 Untuk RANSAC, recall strict Lantai ≈ 9069 / 10000 = 90.7%, jauh di bawah angka yang dilaporkan. Laporan menggunakan definisi yang umum dipakai di literatur segmentasi (evaluated on classified points), tapi penting untuk memahami batasannya.
 
-### 5.4 Konteks: Kapan RANSAC Lebih Relevan?
+### 5.5 Konteks: Kapan RANSAC Lebih Relevan?
 
 Meskipun Region Growing unggul di sini, RANSAC memiliki kelebihan pada skenario berbeda:
 
@@ -226,7 +254,7 @@ Sebaliknya, Region Growing lebih cocok untuk:
 - Kasus di mana bidang saling berdekatan dan berbagi boundary
 - Situasi di mana coverage tinggi lebih penting daripada precision absolut
 
-### 5.5 Kompleksitas Komputasi
+### 5.6 Kompleksitas Komputasi
 
 | | RANSAC | Region Growing |
 |---|---|---|
@@ -254,4 +282,4 @@ Dua pola pikir berbeda, dua hasil berbeda, satu insight yang sama: **pilihan alg
 
 ---
 
-*Notebook lengkap tersedia di `point_cloud_segmentation.ipynb`. Data dibangkitkan dengan seed deterministik (42) untuk full reproducibility.*
+**Source code:** Repository lengkap tersedia di [github.com/alfiyansys/VI202205-Point-Cloud-Processing](https://github.com/alfiyansys/VI202205-Point-Cloud-Processing). Data dibangkitkan dengan seed deterministik (42) untuk full reproducibility.
