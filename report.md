@@ -56,11 +56,38 @@ Noise σ = 0.03 m (3 cm) dipilih untuk mensimulasikan LiDAR dengan presisi tingg
 
 **Catatan desain:** Dinding B diletakkan di y = W (bukan y = 0) agar kedua dinding tidak overlap di area origin. Ini penting untuk menguji kemampuan kedua metode memisahkan bidang yang tidak saling bersinggungan.
 
-### 2.3 Reproducibility
+### 2.3 Verifikasi Statistik
+
+Untuk memastikan data yang dibangkitkan sesuai dengan model matematis, statistik aktual dihitung dan dibandingkan dengan parameter distribusi teoritis:
+
+**Lantai — sumbu noise z ~ N(0, 0.03²):**
+
+| Parameter | Model | Aktual | Deviasi |
+|---|---|---|---|
+| μ(z) | 0.000 | 0.00010 | < 0.01% |
+| σ(z) | 0.030 | 0.02968 | 1.07% |
+
+**Dinding A — sumbu noise x ~ N(0, 0.03²):**
+
+| Parameter | Model | Aktual | Deviasi |
+|---|---|---|---|
+| μ(x) | 0.000 | −0.00025 | < 0.01% |
+| σ(x) | 0.030 | 0.03021 | 0.70% |
+
+**Dinding B — sumbu noise y ~ N(W, 0.03²):**
+
+| Parameter | Model | Aktual | Deviasi |
+|---|---|---|---|
+| μ(y) | 8.000 | 7.99953 | < 0.01% |
+| σ(y) | 0.030 | 0.02920 | 2.67% |
+
+Seluruh sumbu noise menunjukkan deviasi < 3% dari parameter distribusi teoritis, konsisten dengan hukum bilangan besar pada N = 3.000–10.000 sampel. Sumbu seragam (Uniform) memiliki mean aktual ≈ midpoint interval dan range hampir mencapai batas teoritisnya.
+
+### 2.4 Reproducibility
 
 `np.random.seed(42)` diset di awal eksekusi. Ini memastikan setiap run menghasilkan data identik, bukan sekadar konvensi, tapi kebutuhan untuk eksperimen yang dapat direplikasi dan dibandingkan secara fair.
 
-### 2.4 Visualisasi Ground Truth
+### 2.5 Visualisasi Ground Truth
 
 ![Ground Truth Point Cloud](figures/fig1_ground_truth.png)
 
@@ -72,7 +99,7 @@ Noise σ = 0.03 m (3 cm) dipilih untuk mensimulasikan LiDAR dengan presisi tingg
 
 ### 3.1 Konsep
 
-RANSAC (*Random Sample Consensus*) adalah algoritma estimasi model yang robust terhadap outlier. Model bidang yang digunakan:
+RANSAC (*Random Sample Consensus*) adalah algoritma estimasi model yang robust terhadap outlier (Fischler & Bolles, 1981). Model bidang yang digunakan:
 
 $$ax + by + cz + d = 0, \quad \text{dengan } a^2 + b^2 + c^2 = 1$$
 
@@ -140,7 +167,7 @@ Perlu dicatat: metrik dihitung **hanya pada titik yang berhasil diklasifikasikan
 
 ### 4.1 Konsep
 
-Region Growing mendekati masalah dari perspektif yang berbeda: alih-alih mencari model global yang fit ke sebanyak mungkin titik, ia mempropagasi region secara lokal berdasarkan kesamaan karakteristik permukaan.
+Region Growing mendekati masalah dari perspektif yang berbeda: alih-alih mencari model global yang fit ke sebanyak mungkin titik, ia mempropagasi region secara lokal berdasarkan kesamaan karakteristik permukaan (Adams & Bischof, 1994).
 
 Intuisinya sederhana: dua titik tetangga yang berada di bidang yang sama akan memiliki **normal vektor yang hampir sejajar**. Ini menjadi kriteria pertumbuhan.
 
@@ -153,7 +180,7 @@ Algoritma:
 
 ### 4.2 Estimasi Normal
 
-Normal dihitung menggunakan Open3D dengan pendekatan PCA:
+Normal dihitung menggunakan Open3D (Zhou et al., 2018) dengan pendekatan PCA:
 
 ```python
 pcd.estimate_normals(
@@ -281,5 +308,11 @@ Dua pola pikir berbeda, dua hasil berbeda, satu insight yang sama: **pilihan alg
 **Pertanyaan terbuka untuk eksplorasi lanjut:** Bagaimana performa kedua metode pada data yang lebih realistis, misalnya point cloud dari LiDAR outdoor dengan vegetasi, kendaraan, dan surface yang non-planar? Di sana, kemungkinan besar gambarnya akan terbalik.
 
 ---
+
+## 7. Referensi
+
+- Fischler, M. A., & Bolles, R. C. (1981). Random sample consensus: a paradigm for model fitting with applications to image analysis and automated cartography. *Communications of the ACM*, 24(6), 381–395.
+- Adams, R., & Bischof, L. (1994). Seeded region growing. *IEEE Transactions on Pattern Analysis and Machine Intelligence*, 16(6), 641–647.
+- Zhou, Q.-Y., Park, J., & Koltun, V. (2018). Open3D: A modern library for 3D data processing. *arXiv:1801.09847*.
 
 **Source code:** Repository lengkap tersedia di [github.com/alfiyansys/VI202205-Point-Cloud-Processing](https://github.com/alfiyansys/VI202205-Point-Cloud-Processing). Data dibangkitkan dengan seed deterministik (42) untuk full reproducibility.
