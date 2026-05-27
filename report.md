@@ -262,7 +262,7 @@ Dalam kondisi ini, Region Growing memiliki keunggulan struktural: ia **mengekspl
 
 RANSAC, di sisi lain, bergantung pada sampling acak. Ada probabilitas kecil bahwa 3 titik terpilih menghasilkan model suboptimal yang tidak mewakili bidang utama. Dengan 1000 iterasi, probabilitas ini sangat kecil, tapi tidak nol. Itulah sumber dari 1.510 titik unclassified: boundary titik yang tidak masuk ke inlier set manapun.
 
-### 5.4 Konteks: Kapan RANSAC Lebih Relevan?
+### 5.4 Kapan RANSAC Lebih Relevan?
 
 Meskipun Region Growing unggul di sini, RANSAC memiliki kelebihan pada skenario berbeda:
 
