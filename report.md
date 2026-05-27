@@ -54,7 +54,7 @@ $$y_i \sim \mathcal{N}(W,\ 0.03^2), \quad x_i \sim U(0, L), \quad z_i \sim U(0, 
 
 Noise σ = 0.03 m (3 cm) dipilih untuk mensimulasikan LiDAR dengan presisi tinggi namun tetap realistis. Tidak ada sensor yang menghasilkan titik-titik pada bidang sempurna.
 
-**Catatan desain:** Dinding B diletakkan di y = W (bukan y = 0) agar kedua dinding tidak overlap di area origin. Ini penting untuk menguji kemampuan kedua metode memisahkan bidang yang tidak saling bersinggungan.
+**Catatan:** Dinding B diletakkan di y = W (bukan y = 0) agar kedua dinding tidak overlap di area origin. Ini penting untuk menguji kemampuan kedua metode memisahkan bidang yang tidak saling bersinggungan.
 
 ### 2.3 Verifikasi Statistik
 
@@ -110,21 +110,22 @@ Proses per iterasi:
 3. Titik dengan dist < threshold dianggap **inlier**
 4. Simpan model dengan inlier terbanyak
 
-Setelah N iterasi, model terbaik dipilih. Pada praktikum ini N = 1000 dan threshold = 0.05 m.
+Setelah N iterasi, model terbaik dipilih. Pada percobaan ini N = 1000 dan threshold = 0.05 m.
 
 ### 3.2 Implementasi Iteratif
 
 Karena ada tiga bidang yang perlu ditemukan, RANSAC dijalankan tiga kali secara berurutan:
 
 ```
-Iterasi 1: Cari bidang dengan inlier terbanyak dari semua 16.000 titik
-           → Label titik sebagai inlier bidang tersebut
-           → Hapus inlier dari pool
-Iterasi 2: Jalankan RANSAC pada titik yang tersisa
-Iterasi 3: Jalankan RANSAC pada titik yang tersisa lagi
+Iterasi 1: Cari bidang dari semua 16.000 titik
+           Label dan hapus inlier dari pool  (sisa: ~6.000 titik)
+Iterasi 2: Cari bidang dari titik sisa iterasi 1
+           Label dan hapus inlier dari pool  (sisa: ~3.000 titik)
+Iterasi 3: Cari bidang dari titik sisa iterasi 2
+           Label inlier sebagai bidang ketiga
 ```
 
-Pendekatan ini efektif karena bidang yang paling besar (lantai, 10.000 titik) akan selalu ditemukan pertama; secara statistik, frekuensi random sampling akan lebih banyak memilih inlier dari bidang dengan populasi titik terbesar.
+Pendekatan ini efektif karena bidang yang paling besar (lantai, 10.000 titik) akan selalu ditemukan pertama. Secara statistik, frekuensi random sampling akan lebih banyak memilih inlier dari bidang dengan populasi titik terbesar.
 
 ### 3.3 Penentuan Label
 
