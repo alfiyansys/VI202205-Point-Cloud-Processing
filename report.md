@@ -151,15 +151,15 @@ Ini bekerja karena ketiga bidang saling tegak lurus, sehingga normalnya masing-m
 
 | Metrik | Nilai |
 |---|---|
-| Waktu komputasi | 0.742 detik |
+| Waktu komputasi | 0.771 detik |
 | Titik terklasifikasi | 14.490 / 16.000 (90.6%) |
 | Unclassified | 1.510 (9.4%) |
-| Akurasi | 99.12% |
+| Akurasi | 89.76% |
 | Precision (macro) | 99.32% |
-| Recall (macro) | 98.52% |
-| F1-Score (macro) | 98.92% |
+| Recall (macro) | 89.13% |
+| F1-Score (macro) | 93.94% |
 
-Perlu dicatat: metrik dihitung **hanya pada titik yang berhasil diklasifikasikan** (14.490 titik). Titik unclassified adalah titik yang tidak termasuk inlier di ketiga iterasi, dan mayoritas di antaranya berada di area transisi antar bidang (sudut ruangan) di mana noise dari dua permukaan saling overlap.
+Metrik dihitung atas semua 16.000 titik; titik unclassified dihitung sebagai prediksi salah (false negative untuk kelas asalnya). Precision tinggi (99.32%) menunjukkan hampir tidak ada salah label antar kelas — kesalahan RANSAC murni berupa titik yang tidak diklaim oleh inlier manapun, terutama di area transisi antar bidang.
 
 ---
 
@@ -212,16 +212,16 @@ Threshold 15° dipilih: cukup besar untuk mentoleransi noise estimasi normal, cu
 
 | Metrik | Nilai |
 |---|---|
-| Waktu komputasi | 0.505 detik |
+| Waktu komputasi | 0.526 detik |
 | Region ditemukan | 3 |
 | Titik terklasifikasi | 15.265 / 16.000 (95.4%) |
 | Unclassified | 735 (4.6%) |
-| Akurasi | 100% |
+| Akurasi | 95.41% |
 | Precision (macro) | 100% |
-| Recall (macro) | 100% |
-| F1-Score (macro) | 100% |
+| Recall (macro) | 94.29% |
+| F1-Score (macro) | 97.05% |
 
-Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak ada region spurious, tidak ada bidang yang terpecah. Ini karena data sintetis dengan noise kecil (σ = 0.03) menghasilkan normal yang sangat konsisten per bidang.
+Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak ada region spurious, tidak ada bidang yang terpecah. Precision 100% berarti tidak ada satu pun titik yang salah label antar kelas — satu-satunya "kesalahan" adalah 735 titik yang tidak terjangkau BFS dari seed manapun.
 
 ---
 
@@ -237,11 +237,11 @@ Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak 
 
 | Dimensi | RANSAC | Region Growing |
 |---|---|---|
-| **Akurasi** | 99.12% | **100%** |
+| **Akurasi** | 89.76% | **95.41%** |
 | **Precision** | 99.32% | **100%** |
-| **Recall** | 98.52% | **100%** |
-| **F1-Score** | 98.92% | **100%** |
-| **Waktu** | 0.742 det | **0.505 det** |
+| **Recall** | 89.13% | **94.29%** |
+| **F1-Score** | 93.94% | **97.05%** |
+| **Waktu** | 0.771 det | **0.526 det** |
 | **Unclassified** | 1.510 titik | **735 titik** |
 | **Coverage** | 90.6% | **95.4%** |
 
@@ -258,17 +258,7 @@ Dalam kondisi ini, Region Growing memiliki keunggulan struktural: ia **mengekspl
 
 RANSAC, di sisi lain, bergantung pada sampling acak. Ada probabilitas kecil bahwa 3 titik terpilih menghasilkan model suboptimal yang tidak mewakili bidang utama. Dengan 1000 iterasi, probabilitas ini sangat kecil, tapi tidak nol. Itulah sumber dari 1.510 titik unclassified: boundary titik yang tidak masuk ke inlier set manapun.
 
-### 5.4 Keterbatasan Evaluasi
-
-Perlu jujur tentang satu keterbatasan dalam metrik yang dilaporkan: **precision, recall, dan F1 dihitung hanya pada titik yang berhasil diklasifikasikan**, sedangkan titik unclassified tidak dimasukkan ke dalam perhitungan.
-
-Ini berarti recall yang dilaporkan bukanlah recall sesungguhnya dalam artian standar. Jika dihitung secara ketat:
-
-$$\text{Recall}_{\text{strict}} = \frac{\text{TP}}{\text{TP} + \text{FN} + \text{unclassified}}$$
-
-Untuk RANSAC, recall strict Lantai ≈ 9069 / 10000 = 90.7%, jauh di bawah angka yang dilaporkan. Laporan menggunakan definisi yang umum dipakai di literatur segmentasi (evaluated on classified points), tapi penting untuk memahami batasannya.
-
-### 5.5 Konteks: Kapan RANSAC Lebih Relevan?
+### 5.4 Konteks: Kapan RANSAC Lebih Relevan?
 
 Meskipun Region Growing unggul di sini, RANSAC memiliki kelebihan pada skenario berbeda:
 
@@ -281,7 +271,7 @@ Sebaliknya, Region Growing lebih cocok untuk:
 - Kasus di mana bidang saling berdekatan dan berbagi boundary
 - Situasi di mana coverage tinggi lebih penting daripada precision absolut
 
-### 5.6 Kompleksitas Komputasi
+### 5.5 Kompleksitas Komputasi
 
 | | RANSAC | Region Growing |
 |---|---|---|
@@ -299,11 +289,11 @@ Dua pola pikir berbeda, dua hasil berbeda, satu insight yang sama: **pilihan alg
 
 **Temuan utama:**
 
-1. Region Growing outperform RANSAC pada semua metrik untuk dataset ini: akurasi sempurna (100%), coverage lebih tinggi (95.4% vs 90.6%), dan waktu lebih cepat (0.505 vs 0.742 detik). Ini bukan karena Region Growing "lebih baik" secara universal, tapi karena karakteristik data (bidang saling tegak lurus, noise kecil, dense) sangat cocok dengan asumsi algoritma tersebut.
+1. Region Growing outperform RANSAC pada semua metrik untuk dataset ini: akurasi 95.41% vs 89.76%, F1-Score 97.05% vs 93.94%, coverage lebih tinggi (95.4% vs 90.6%), dan waktu lebih cepat (0.526 vs 0.771 detik). Ini bukan karena Region Growing "lebih baik" secara universal, tapi karena karakteristik data (bidang saling tegak lurus, noise kecil, dense) sangat cocok dengan asumsi algoritma tersebut.
 
-2. RANSAC tetap menghasilkan performa tinggi (F1 = 98.92%) dan jauh lebih general, sehingga lebih cocok untuk data real-world dengan outlier, sparse coverage, atau bidang yang tidak continuous.
+2. RANSAC tetap menghasilkan performa yang baik (F1 = 93.94%) dan jauh lebih general, sehingga lebih cocok untuk data real-world dengan outlier, sparse coverage, atau bidang yang tidak continuous.
 
-3. Evaluasi metrik perlu dipahami konteksnya: angka precision/recall di laporan ini dihitung pada titik yang terklasifikasi saja. Dalam skenario di mana coverage rendah, metrik ini bisa menyesatkan.
+3. Evaluasi menggunakan semua 16.000 titik; titik unclassified dihitung sebagai false negative, sehingga recall dan akurasi mencerminkan kemampuan coverage algoritma secara keseluruhan, bukan hanya kebenaran label pada titik yang berhasil diklasifikasikan.
 
 **Pertanyaan terbuka untuk eksplorasi lanjut:** Bagaimana performa kedua metode pada data yang lebih realistis, misalnya point cloud dari LiDAR outdoor dengan vegetasi, kendaraan, dan surface yang non-planar? Di sana, kemungkinan besar gambarnya akan terbalik.
 
