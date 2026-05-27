@@ -300,8 +300,6 @@ Dua pola pikir berbeda, dua hasil berbeda, satu insight yang sama: **pilihan alg
 
 3. Evaluasi menggunakan semua 16.000 titik, dengan titik unclassified dihitung sebagai false negative, sehingga recall dan akurasi mencerminkan kemampuan coverage algoritma secara keseluruhan, bukan hanya kebenaran label pada titik yang berhasil diklasifikasikan.
 
-**Pertanyaan terbuka untuk eksplorasi lanjut:** Bagaimana performa kedua metode pada data yang lebih realistis, misalnya point cloud dari LiDAR outdoor dengan vegetasi, kendaraan, dan surface yang non-planar? Di sana, kemungkinan besar gambarnya akan terbalik.
-
 ---
 
 ## 7. Referensi
