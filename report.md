@@ -147,13 +147,13 @@ Ini bekerja karena ketiga bidang saling tegak lurus, sehingga normalnya masing-m
 
 ![Confusion Matrix RANSAC](figures/fig3_cm_ransac.png)
 
-*Gambar 3. Confusion matrix hasil segmentasi RANSAC (dihitung pada titik yang terklasifikasi).*
+*Gambar 3. Confusion matrix hasil segmentasi RANSAC (semua 16.000 titik; kolom Unclassified = titik yang tidak masuk inlier manapun).*
 
 | Metrik | Nilai |
 |---|---|
 | Waktu komputasi | 0.771 detik |
 | Titik terklasifikasi | 14.490 / 16.000 (90.6%) |
-| Unclassified | 1.510 (9.4%) |
+| Unclassified (FN) | 1.510 (9.4%) |
 | Akurasi | 89.76% |
 | Precision (macro) | 99.32% |
 | Recall (macro) | 89.13% |
