@@ -60,21 +60,21 @@ Noise σ = 0.03 m (3 cm) dipilih untuk mensimulasikan LiDAR dengan presisi tingg
 
 Untuk memastikan data yang dibangkitkan sesuai dengan model matematis, statistik aktual dihitung dan dibandingkan dengan parameter distribusi teoritis:
 
-**Lantai — sumbu noise z ~ N(0, 0.03²):**
+**Lantai, sumbu noise z ~ N(0, 0.03²):**
 
 | Parameter | Model | Aktual | Deviasi |
 |---|---|---|---|
 | μ(z) | 0.000 | 0.00010 | < 0.01% |
 | σ(z) | 0.030 | 0.02968 | 1.07% |
 
-**Dinding A — sumbu noise x ~ N(0, 0.03²):**
+**Dinding A, sumbu noise x ~ N(0, 0.03²):**
 
 | Parameter | Model | Aktual | Deviasi |
 |---|---|---|---|
 | μ(x) | 0.000 | −0.00025 | < 0.01% |
 | σ(x) | 0.030 | 0.03021 | 0.70% |
 
-**Dinding B — sumbu noise y ~ N(W, 0.03²):**
+**Dinding B, sumbu noise y ~ N(W, 0.03²):**
 
 | Parameter | Model | Aktual | Deviasi |
 |---|---|---|---|
@@ -104,7 +104,8 @@ RANSAC (*Random Sample Consensus*) adalah algoritma estimasi model yang robust t
 $$ax + by + cz + d = 0, \quad \text{dengan } a^2 + b^2 + c^2 = 1$$
 
 Proses per iterasi:
-1. Pilih 3 titik secara acak → hitung normal bidang via cross product
+
+1. Pilih 3 titik secara acak, hitung normal bidang via cross product
 2. Hitung jarak semua titik ke bidang: $\text{dist}_i = |a x_i + b y_i + c z_i + d|$
 3. Titik dengan dist < threshold dianggap **inlier**
 4. Simpan model dengan inlier terbanyak
@@ -147,7 +148,7 @@ Ini bekerja karena ketiga bidang saling tegak lurus, sehingga normalnya masing-m
 
 ![Confusion Matrix RANSAC](figures/fig3_cm_ransac.png)
 
-*Gambar 3. Confusion matrix hasil segmentasi RANSAC (semua 16.000 titik; kolom Unclassified = titik yang tidak masuk inlier manapun).*
+*Gambar 3. Confusion matrix hasil segmentasi RANSAC (semua 16.000 titik, kolom Unclassified = titik yang tidak masuk inlier manapun).*
 
 | Metrik | Nilai |
 |---|---|
@@ -159,7 +160,7 @@ Ini bekerja karena ketiga bidang saling tegak lurus, sehingga normalnya masing-m
 | Recall (macro) | 89.13% |
 | F1-Score (macro) | 93.94% |
 
-Metrik dihitung atas semua 16.000 titik; titik unclassified dihitung sebagai prediksi salah (false negative untuk kelas asalnya). Precision tinggi (99.32%) menunjukkan hampir tidak ada salah label antar kelas — kesalahan RANSAC murni berupa titik yang tidak diklaim oleh inlier manapun, terutama di area transisi antar bidang.
+Metrik dihitung atas semua 16.000 titik, dengan titik unclassified dihitung sebagai prediksi salah (false negative untuk kelas asalnya). Precision tinggi (99.32%) menunjukkan hampir tidak ada salah label antar kelas. Kesalahan RANSAC murni berupa titik yang tidak diklaim oleh inlier manapun, terutama di area transisi antar bidang.
 
 ---
 
@@ -172,11 +173,12 @@ Region Growing mendekati masalah dari perspektif yang berbeda: alih-alih mencari
 Intuisinya sederhana: dua titik tetangga yang berada di bidang yang sama akan memiliki **normal vektor yang hampir sejajar**. Ini menjadi kriteria pertumbuhan.
 
 Algoritma:
+
 1. Estimasi normal permukaan setiap titik menggunakan PCA pada K tetangga terdekat
 2. Iterasi semua titik yang belum dikunjungi sebagai seed
 3. BFS dari seed: tambahkan tetangga ke region jika sudut antara normalnya dan normal referensi < threshold
 4. Region yang cukup besar (≥ min_pts) disimpan
-5. Ambil 3 region terbesar → tentukan label dari normal rata-rata region
+5. Ambil 3 region terbesar, tentukan label dari normal rata-rata region
 
 ### 4.2 Estimasi Normal
 
@@ -221,7 +223,7 @@ Threshold 15° dipilih: cukup besar untuk mentoleransi noise estimasi normal, cu
 | Recall (macro) | 94.29% |
 | F1-Score (macro) | 97.05% |
 
-Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak ada region spurious, tidak ada bidang yang terpecah. Precision 100% berarti tidak ada satu pun titik yang salah label antar kelas — satu-satunya "kesalahan" adalah 735 titik yang tidak terjangkau BFS dari seed manapun.
+Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak ada region spurious, tidak ada bidang yang terpecah. Precision 100% berarti tidak ada satu pun titik yang salah label antar kelas. Satu-satunya "kesalahan" adalah 735 titik yang tidak terjangkau BFS dari seed manapun.
 
 ---
 
@@ -250,9 +252,10 @@ Region Growing menemukan tepat 3 region, sesuai dengan 3 bidang yang ada. Tidak 
 Perbedaan performa ini bukan kebetulan, melainkan konsekuensi langsung dari karakteristik data.
 
 **Data ini memiliki struktur yang sangat "bersih":**
-- Tiga bidang saling tegak lurus → normal berbeda 90° satu sama lain
-- Noise σ = 0.03 m sangat kecil → normal estimasi akurat
-- Tidak ada outlier ekstrim → tidak ada "noise point" yang jauh dari bidang manapun
+
+- Tiga bidang saling tegak lurus, sehingga normal berbeda 90° satu sama lain
+- Noise σ = 0.03 m sangat kecil, sehingga estimasi normal akurat
+- Tidak ada outlier ekstrim, sehingga tidak ada "noise point" yang jauh dari bidang manapun
 
 Dalam kondisi ini, Region Growing memiliki keunggulan struktural: ia **mengeksploitasi konsistensi lokal** yang memang sangat kuat pada data ini. Setiap titik di lantai dikelilingi tetangga yang semuanya juga di lantai, dengan normal hampir identik. Propagasi BFS berjalan sempurna.
 
@@ -262,11 +265,12 @@ RANSAC, di sisi lain, bergantung pada sampling acak. Ada probabilitas kecil bahw
 
 Meskipun Region Growing unggul di sini, RANSAC memiliki kelebihan pada skenario berbeda:
 
-- **Data dengan outlier berat** (LiDAR di luar ruangan, pantulan, vegetasi) → RANSAC lebih robust karena by design mengabaikan outlier.
-- **Bidang yang terputus-putus** (tidak continuous) → RANSAC bisa menemukan satu bidang dari fragmen yang terpisah.
-- **Data tanpa normal yang bisa dipercaya** → Region Growing breakdown jika estimasi normal tidak akurat (sparse point cloud, occlusion berat).
+- **Data dengan outlier berat** (LiDAR di luar ruangan, pantulan, vegetasi): RANSAC lebih robust karena by design mengabaikan outlier.
+- **Bidang yang terputus-putus** (tidak continuous): RANSAC bisa menemukan satu bidang dari fragmen yang terpisah.
+- **Data tanpa normal yang bisa dipercaya**: Region Growing akan breakdown jika estimasi normal tidak akurat (sparse point cloud, occlusion berat).
 
 Sebaliknya, Region Growing lebih cocok untuk:
+
 - Data dense, low-noise seperti indoor LiDAR
 - Kasus di mana bidang saling berdekatan dan berbagi boundary
 - Situasi di mana coverage tinggi lebih penting daripada precision absolut
@@ -293,7 +297,7 @@ Dua pola pikir berbeda, dua hasil berbeda, satu insight yang sama: **pilihan alg
 
 2. RANSAC tetap menghasilkan performa yang baik (F1 = 93.94%) dan jauh lebih general, sehingga lebih cocok untuk data real-world dengan outlier, sparse coverage, atau bidang yang tidak continuous.
 
-3. Evaluasi menggunakan semua 16.000 titik; titik unclassified dihitung sebagai false negative, sehingga recall dan akurasi mencerminkan kemampuan coverage algoritma secara keseluruhan, bukan hanya kebenaran label pada titik yang berhasil diklasifikasikan.
+3. Evaluasi menggunakan semua 16.000 titik, dengan titik unclassified dihitung sebagai false negative, sehingga recall dan akurasi mencerminkan kemampuan coverage algoritma secara keseluruhan, bukan hanya kebenaran label pada titik yang berhasil diklasifikasikan.
 
 **Pertanyaan terbuka untuk eksplorasi lanjut:** Bagaimana performa kedua metode pada data yang lebih realistis, misalnya point cloud dari LiDAR outdoor dengan vegetasi, kendaraan, dan surface yang non-planar? Di sana, kemungkinan besar gambarnya akan terbalik.
 
